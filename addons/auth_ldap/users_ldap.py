@@ -165,13 +165,13 @@ class CompanyLDAP(osv.osv):
         :rtype: dict
         """
         values = { 'name': ldap_entry[1]['cn'][0],
-                   'email': ldap_entry[1]['mail'][0],
-                   'phone': ldap_entry[1]['telephoneNumber'][0],
-                   'fax': ldap_entry[1]['facsimileTelephoneNumber'][0],
-                   'mobile': ldap_entry[1]['mobile'][0],
-                   'zip': ldap_entry[1]['postalCode'][0],
-                   'function': ldap_entry[1]['title'][0],
-                   'city': ldap_entry[1]['l'][0],
+                   'email': ldap_entry[1]['mail'][0] or '',
+                   'phone': ldap_entry[1]['telephoneNumber'][0] or '',
+                   'fax': ldap_entry[1]['facsimileTelephoneNumber'][0] or '',
+                   'mobile': ldap_entry[1]['mobile'][0] or '',
+                   'zip': ldap_entry[1]['postalCode'][0] or '',
+                   'function': ldap_entry[1]['title'][0] or '',
+                   'city': ldap_entry[1]['l'][0] or '',
                    'login': login,
                    'company_id': conf['company']
                    }
