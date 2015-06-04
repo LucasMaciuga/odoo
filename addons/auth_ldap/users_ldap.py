@@ -153,6 +153,19 @@ class CompanyLDAP(osv.osv):
             _logger.error('An LDAP exception occurred: %s', e)
         return results
 
+    def get_item_or_empty(self, list, index):
+        """
+        A small list getter function
+
+        :param list: the list to check
+        :param index: index the list should be checked for
+        :return: value in list
+        :rtype: object
+        """
+        if len(list) > index:
+            return list[index]
+        return ''
+
     def map_ldap_attributes(self, cr, uid, conf, login, ldap_entry):
         """
         Compose values for a new resource of model res_users,
@@ -166,18 +179,18 @@ class CompanyLDAP(osv.osv):
         """
         ldap_dic = ldap_entry[1]
         values = { 'name': ldap_dic['cn'][0],
-                   'email': ldap_dic.get('mail','').get(0,''),
-                   'phone': ldap_dic.get('telephoneNumber','').get(0,''),
-                   'fax': ldap_dic.get('facsimileTelephoneNumber','').get(0,''),
-                   'mobile': ldap_dic.get('mobile','').get(0,''),
-                   'zip': ldap_dic.get('postalCode','').get(0,''),
-                   'function': ldap_dic.get('title','').get(0,''),
-                   'city': ldap_dic.get('l','').get(0,''),
+                   'email': self.get_item_or_empty(ldap_dic.get('mail',''),0),
+                   'phone': self.get_item_or_empty(ldap_dic.get('telephoneNumber',''),0),
+                   'fax': self.get_item_or_empty(ldap_dic.get('facsimileTelephoneNumber',''),0),
+                   'mobile': self.get_item_or_empty(ldap_dic.get('mobile',''),0),
+                   'zip': self.get_item_or_empty(ldap_dic.get('postalCode',''),0),
+                   'function': self.get_item_or_empty(ldap_dic.get('title',''),0),
+                   'city': self.get_item_or_empty(ldap_dic.get('l',''),0),
                    'login': login,
                    'company_id': conf['company']
                    }
         return values
-    
+
     def get_or_create_user(self, cr, uid, conf, login, ldap_entry,
                            context=None):
         """
