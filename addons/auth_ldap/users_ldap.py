@@ -83,7 +83,7 @@ class CompanyLDAP(osv.osv):
 
         In order to prevent an unintended 'unauthenticated authentication',
         which is an anonymous bind with a valid dn and a blank password,
-        check for empty passwords explicitely (:rfc:`4513#section-6.3.1`)
+        check for empty passwords explicitly (:rfc:`4513#section-6.3.1`)
         
         :param dict conf: LDAP configuration
         :param login: username
@@ -140,6 +140,8 @@ class CompanyLDAP(osv.osv):
         results = []
         try:
             conn = self.connect(conf)
+            conn.protocol_version = ldap.VERSION3
+            conn.set_option(ldap.OPT_REFERRALS, 0)
             ldap_password = conf['ldap_password'] or ''
             conn.simple_bind_s(conf['ldap_binddn'] or '', ldap_password.encode('utf-8'))
             results = conn.search_st(conf['ldap_base'], ldap.SCOPE_SUBTREE,
@@ -162,8 +164,14 @@ class CompanyLDAP(osv.osv):
         :return: parameters for a new resource of model res_users
         :rtype: dict
         """
-
         values = { 'name': ldap_entry[1]['cn'][0],
+                   'email': ldap_entry[1]['mail'][0],
+                   'phone': ldap_entry[1]['telephoneNumber'][0],
+                   'fax': ldap_entry[1]['facsimileTelephoneNumber'][0],
+                   'mobile': ldap_entry[1]['mobile'][0],
+                   'zip': ldap_entry[1]['postalCode'][0],
+                   'function': ldap_entry[1]['title'][0],
+                   'city': ldap_entry[1]['l'][0],
                    'login': login,
                    'company_id': conf['company']
                    }
@@ -199,6 +207,31 @@ class CompanyLDAP(osv.osv):
                                         default=values)
             else:
                 user_id = user_obj.create(cr, SUPERUSER_ID, values)
+                employee_obj = self.pool['hr.employee']
+                resource_values = { 'create_uid': 1,
+                                    'time_efficiency': 1,
+                                    'user_id': user_id,
+                                    'name': values.name,
+                                    'company_id': values.company_id,
+                                    'write_uid': 1,
+                                    'active': True,
+                                    'resource_type': 'user'
+                                    }
+                resource_obj = self.pool['resource.resource']
+                resource_id = resource_obj.create(cr, SUPERUSER_ID, resource_values)
+                employee_values = { 'address_id': 1,
+                                    'resource_id': resource_id,
+                                    'work_email': values.email,
+                                    'work_phone': values.phone,
+                                    'mobile_phone': values.mobile,
+                                    'write_uid': 1,
+                                    'create_uid': 1,
+                                    'uom_id': 5,
+                                    'journal_id': 3,
+                                    'product_id': 1,
+                                    'name_related': values.name
+                                    }
+                employee_id = employee_obj.create(cr, SUPERUSER_ID, employee_values)
         return user_id
 
     _columns = {
