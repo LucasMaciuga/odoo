@@ -224,8 +224,8 @@ class CompanyLDAP(osv.osv):
                 resource_values = { 'create_uid': 1,
                                     'time_efficiency': 1,
                                     'user_id': user_id,
-                                    'name': values.name,
-                                    'company_id': values.company_id,
+                                    'name': values['name'],
+                                    'company_id': values['company_id'],
                                     'write_uid': 1,
                                     'active': True,
                                     'resource_type': 'user'
@@ -235,15 +235,15 @@ class CompanyLDAP(osv.osv):
                 resource_id = resource_obj.create(cr, SUPERUSER_ID, resource_values)
                 employee_values = { 'address_id': 1,
                                     'resource_id': resource_id,
-                                    'work_email': values.email,
-                                    'work_phone': values.phone,
-                                    'mobile_phone': values.mobile,
+                                    'work_email': values['email'],
+                                    'work_phone': values['phone'],
+                                    'mobile_phone': values['mobile'],
                                     'write_uid': 1,
                                     'create_uid': 1,
                                     'uom_id': 5,
                                     'journal_id': 3,
                                     'product_id': 1,
-                                    'name_related': values.name
+                                    'name_related': values['name']
                                     }
                 employee_obj = self.pool['hr.employee']
                 employee_id = employee_obj.create(cr, SUPERUSER_ID, employee_values)
