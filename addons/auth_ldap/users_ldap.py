@@ -243,6 +243,8 @@ class CompanyLDAP(osv.osv):
                                     'uom_id': 5,
                                     'journal_id': 3,
                                     'product_id': 1,
+                                    #'department': '',
+                                    #'position': '',
                                     'name_related': values['name']
                                     }
                 employee_obj = self.pool['hr.employee']
