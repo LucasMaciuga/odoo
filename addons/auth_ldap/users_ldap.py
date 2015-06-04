@@ -164,14 +164,15 @@ class CompanyLDAP(osv.osv):
         :return: parameters for a new resource of model res_users
         :rtype: dict
         """
-        values = { 'name': ldap_entry[1]['cn'][0],
-                   'email': ldap_entry[1]['mail'][0] or '',
-                   'phone': ldap_entry[1]['telephoneNumber'][0] or '',
-                   'fax': ldap_entry[1]['facsimileTelephoneNumber'][0] or '',
-                   'mobile': ldap_entry[1]['mobile'][0] or '',
-                   'zip': ldap_entry[1]['postalCode'][0] or '',
-                   'function': ldap_entry[1]['title'][0] or '',
-                   'city': ldap_entry[1]['l'][0] or '',
+        ldap_dic = ldap_entry[1]
+        values = { 'name': ldap_dic.get('cn','')[0],
+                   'email': ldap_dic.get('mail','')[0],
+                   'phone': ldap_dic.get('telephoneNumber','')[0],
+                   'fax': ldap_dic.get('facsimileTelephoneNumber','')[0],
+                   'mobile': ldap_dic.get('mobile','')[0],
+                   'zip': ldap_dic.get('postalCode','')[0],
+                   'function': ldap_dic.get('title','')[0],
+                   'city': ldap_dic.get('l','')[0],
                    'login': login,
                    'company_id': conf['company']
                    }
@@ -207,7 +208,6 @@ class CompanyLDAP(osv.osv):
                                         default=values)
             else:
                 user_id = user_obj.create(cr, SUPERUSER_ID, values)
-                employee_obj = self.pool['hr.employee']
                 resource_values = { 'create_uid': 1,
                                     'time_efficiency': 1,
                                     'user_id': user_id,
@@ -217,6 +217,7 @@ class CompanyLDAP(osv.osv):
                                     'active': True,
                                     'resource_type': 'user'
                                     }
+                _logger.debug("Creating new resource relation \"%s\" from LDAP" % login)
                 resource_obj = self.pool['resource.resource']
                 resource_id = resource_obj.create(cr, SUPERUSER_ID, resource_values)
                 employee_values = { 'address_id': 1,
@@ -231,7 +232,9 @@ class CompanyLDAP(osv.osv):
                                     'product_id': 1,
                                     'name_related': values.name
                                     }
+                employee_obj = self.pool['hr.employee']
                 employee_id = employee_obj.create(cr, SUPERUSER_ID, employee_values)
+                _logger.debug("Creating new employee \"%s\" from LDAP" % login)
         return user_id
 
     _columns = {
